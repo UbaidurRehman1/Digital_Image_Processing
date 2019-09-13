@@ -1,0 +1,1 @@
+To create virtual env of Python Project: python -m venv .venv
