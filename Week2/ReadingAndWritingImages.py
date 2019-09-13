@@ -11,6 +11,3 @@ print(im.format, im.size, im.mode)
 #showing the image
 im.show()
 
-
-#converting files to JPEG
-
