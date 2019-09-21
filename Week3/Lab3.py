@@ -29,7 +29,7 @@ class ImgProcessing:
         max_value_string = str(max_value_of_sum_of_internal_lists)
         number_zeros = len(max_value_string) - 2
         number_to_minus_string = '1' + ('0' * number_zeros)
-        number_to_minus = 2 * int(number_to_minus_string)
+        number_to_minus = int(number_to_minus_string)
 
         normalize_max_value = ((max_value_of_sum_of_internal_lists - number_to_minus)
                                + max_value_of_sum_of_internal_lists) / 2;
@@ -40,8 +40,8 @@ class ImgProcessing:
         # range = (normalize_max_value - (number_to_minus/2), normalize_max_value + (number_to_minus/2))
         range_list = []
 
-        max_value = normalize_max_value + (number_to_minus/2)
-        min_value = normalize_max_value - (number_to_minus/2)
+        max_value = normalize_max_value + (number_to_minus/10)
+        min_value = normalize_max_value - (number_to_minus/10)
 
         # range_width = max_value - min_value
         # range_width = int(range_width)
@@ -51,9 +51,15 @@ class ImgProcessing:
 
         # print(range)
         # now getting indexing by matching our average threshold
+
+        # test ------------------ test
+        max_value = max_value_of_sum_of_internal_lists
+        min_value = max_value_of_sum_of_internal_lists - number_to_minus
+        # test ------------------- test
+
         index_list = []
         for value in list_of_sum_of_internal_array:
-            if max_value >= value >= min_value:
+            if max_value > value > min_value:
                 index_list.append(1)
             else:
                 index_list.append(0)
@@ -235,11 +241,11 @@ class ImgProcessing:
 def main():
     # print('main')
     obj = ImgProcessing()
-    obj.__int__("pics/B1.png")
-    obj.__int__("pics/B2.jpg")
-    obj.__int__("pics/B3.jpg")
+    # obj.__int__("pics/B1.png")
+    # obj.__int__("pics/B2.jpg")
+    # obj.__int__("pics/B3.jpg")
     obj.__int__("pics/XY-cuts.png", 'recursive_cut')
-    obj.__int__("pics/XY-cutss.png", 'recursive_cut')
+    # obj.__int__("pics/XY-cutss.png", 'recursive_cut')
 
 
 main()
