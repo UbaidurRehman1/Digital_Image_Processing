@@ -19,29 +19,32 @@ class ImgProcessing:
             print("The file you have asked not found, please put pics in pics folder")
 
     def recursive_cut(self, img):
+        # getting path of the file
         path = self.path
+
+        # getting list of sum of internal lists of image 2d array
+        # [sum of internal array, sum of internal array, ....]
         list_of_sum_of_internal_array = ImgProcessing.get_list_of_sum_of_internal_array(img)
-        # self.create_histogram(list_of_sum_of_internal_array, 100)
-        print('... recursive cut ....')
-        # getting max value in the list
+
+        # getting max value in the list (sum of internal lists)
         max_value_of_sum_of_internal_lists = list_of_sum_of_internal_array.max()
 
+        # getting a number which is supposed to minus from the max value
         max_value_string = str(max_value_of_sum_of_internal_lists)
         number_zeros = len(max_value_string) - 2
         number_to_minus_string = '1' + ('0' * number_zeros)
         number_to_minus = int(number_to_minus_string)
 
+        # no need of this
         normalize_max_value = ((max_value_of_sum_of_internal_lists - number_to_minus)
                                + max_value_of_sum_of_internal_lists) / 2;
-
-        print(normalize_max_value)
 
         # now creating a range by subtracting multiple of zeros to ensure that it will be average
         # range = (normalize_max_value - (number_to_minus/2), normalize_max_value + (number_to_minus/2))
         range_list = []
 
-        max_value = normalize_max_value + (number_to_minus/10)
-        min_value = normalize_max_value - (number_to_minus/10)
+        # max_value = normalize_max_value + (number_to_minus/10)
+        # min_value = normalize_max_value - (number_to_minus/10)
 
         # range_width = max_value - min_value
         # range_width = int(range_width)
@@ -52,10 +55,12 @@ class ImgProcessing:
         # print(range)
         # now getting indexing by matching our average threshold
 
-        # test ------------------ test
+        # getting max value and min value to create a range
+        # in which if the sum of all pixels in the row (sum of internal array) is in between the max, min value
+        # then we will mark as an index to cut (as all white pixels will be placed in between the range)
+        # in abstract level, while lines index will mark as 1 and others will mark as 0
         max_value = max_value_of_sum_of_internal_lists
         min_value = max_value_of_sum_of_internal_lists - number_to_minus
-        # test ------------------- test
 
         index_list = []
         for value in list_of_sum_of_internal_array:
@@ -64,12 +69,15 @@ class ImgProcessing:
             else:
                 index_list.append(0)
 
-        print(index_list)
+        # print(index_list)
         # classifying these by making clusters of these indices
-        # [(image_start, image_end), (image_start, image_end), (image_start, image_end), (image_start, image_end), ...]
         cut_list = []
         cluster = 0
         counter = 0
+
+        # we have a list of rows [the rows in which white pixels are most, these are marks as 1 and others
+        # are marked as 0]
+        # we are now averaging the indices of 1 and getting one marked row
         for i in range(len(index_list)):
             if index_list.__getitem__(i) == 1:
                 cluster = cluster + i
@@ -80,8 +88,10 @@ class ImgProcessing:
                 counter = 0
         print(cut_list)
 
-        # final cut list
-
+        # now we have a cut_list where we have only row indices which contain most white pixels
+        # now we want to convert this list to
+        # [(image_start, image_end), (image_start, image_end), (image_start, image_end), (image_start, image_end), ...]
+        # so we can conveniently execute a loop
         final_cut_list = []
         for i in range(len(cut_list)):
             if i != 0:
@@ -91,28 +101,42 @@ class ImgProcessing:
         print(final_cut_list)
 
         # cutting
+        # we have cut list where we have give a tuple of mark (start_image_mark, and end_image_mark)
+        # now we will get all the rows of pixels in between teh start_image_mark index and end_image_mark index
+        # and put in the 2d numpy array of the same dimension length = end_image_mark index - start_image_mark index
+        # and width will be as of original image
+
+        # getting image
         img = self.get_image_np_array()
+        # getting dimension
         l, w = img.shape
-
         temp = img[i]
-
         image_counter = 0;
+        # getting tuple list
         for index_tuple in final_cut_list:
+            # image counter for naming purpose only (no logic)
             image_counter = image_counter + 1;
+            # getting height of the image, the length of external array of 2d array
             t_length = index_tuple[1] - index_tuple[0]
+            # getting 2d array
             temp_img_array = np.arange(t_length * w).reshape(t_length, w)
+            # we are iterating till the length of 2d array (external length) height of image
             for i in range(t_length):
                 i = i + index_tuple[0]
+                # getting row from the real image 2d array
                 real_img_part = img[i]
+
+                # getting row from the newly created 2d array
                 new_img_part = temp_img_array[i - index_tuple[0]]
+
+                # inserting all values from the real image array to newly created image row
                 for index in range(w):
                     new_img_part[index] = real_img_part[index]
-            print(temp_img_array)
+            # print(temp_img_array)
+
+            # writing this image
             self.write_image(self.path.replace('/', '').replace('.png', '')
                              + str(image_counter) + ".png", temp_img_array)
-
-
-
 
 
     @staticmethod
@@ -241,11 +265,11 @@ class ImgProcessing:
 def main():
     # print('main')
     obj = ImgProcessing()
-    # obj.__int__("pics/B1.png")
-    # obj.__int__("pics/B2.jpg")
-    # obj.__int__("pics/B3.jpg")
+    obj.__int__("pics/B1.png")
+    obj.__int__("pics/B2.jpg")
+    obj.__int__("pics/B3.jpg")
     obj.__int__("pics/XY-cuts.png", 'recursive_cut')
-    # obj.__int__("pics/XY-cutss.png", 'recursive_cut')
+    obj.__int__("pics/XY-cutss.png", 'recursive_cut')
 
 
 main()
