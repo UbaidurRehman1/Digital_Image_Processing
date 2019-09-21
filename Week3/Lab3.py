@@ -18,10 +18,20 @@ class ImgProcessing:
         else:
             print("The file you have asked not found, please put pics in pics folder")
 
-    def recursive_cut(self, img):
-        # getting path of the file
-        path = self.path
+    """
+        @:param max_value any number 
+        @:return a number less than 2 digits from the max_value
+    """
+    @staticmethod
+    def get_subtract_number(max_value):
+        max_value_string = str(max_value)
+        number_zeros = len(max_value_string) - 2
+        number_to_minus_string = '1' + ('0' * number_zeros)
+        number_to_minus = int(number_to_minus_string)
+        return number_to_minus
 
+    # noinspection PyArgumentList
+    def recursive_cut(self, img):
         # getting list of sum of internal lists of image 2d array
         # [sum of internal array, sum of internal array, ....]
         list_of_sum_of_internal_array = ImgProcessing.get_list_of_sum_of_internal_array(img)
@@ -30,64 +40,83 @@ class ImgProcessing:
         max_value_of_sum_of_internal_lists = list_of_sum_of_internal_array.max()
 
         # getting a number which is supposed to minus from the max value
-        max_value_string = str(max_value_of_sum_of_internal_lists)
-        number_zeros = len(max_value_string) - 2
-        number_to_minus_string = '1' + ('0' * number_zeros)
-        number_to_minus = int(number_to_minus_string)
-
-        # no need of this
-        normalize_max_value = ((max_value_of_sum_of_internal_lists - number_to_minus)
-                               + max_value_of_sum_of_internal_lists) / 2;
-
-        # now creating a range by subtracting multiple of zeros to ensure that it will be average
-        # range = (normalize_max_value - (number_to_minus/2), normalize_max_value + (number_to_minus/2))
-        range_list = []
-
-        # max_value = normalize_max_value + (number_to_minus/10)
-        # min_value = normalize_max_value - (number_to_minus/10)
-
-        # range_width = max_value - min_value
-        # range_width = int(range_width)
-        #
-        # for i in range(range_width):
-        #     range_list.append(min_value + i)
-
-        # print(range)
-        # now getting indexing by matching our average threshold
+        number_to_minus = self.get_subtract_number(max_value_of_sum_of_internal_lists)
 
         # getting max value and min value to create a range
-        # in which if the sum of all pixels in the row (sum of internal array) is in between the max, min value
-        # then we will mark as an index to cut (as all white pixels will be placed in between the range)
-        # in abstract level, while lines index will mark as 1 and others will mark as 0
         max_value = max_value_of_sum_of_internal_lists
         min_value = max_value_of_sum_of_internal_lists - number_to_minus
 
-        index_list = []
-        for value in list_of_sum_of_internal_array:
-            if max_value > value > min_value:
-                index_list.append(1)
-            else:
-                index_list.append(0)
+        # white rows indices has value 1 and others have 0 in the index list
+        index_list = self.get_marked_indices_list(list_of_sum_of_internal_array, max_value, min_value)
 
-        # print(index_list)
-        # classifying these by making clusters of these indices
-        cut_list = []
-        cluster = 0
-        counter = 0
+        cut_list = self.get_white_rows_indeces(index_list)
 
-        # we have a list of rows [the rows in which white pixels are most, these are marks as 1 and others
-        # are marked as 0]
-        # we are now averaging the indices of 1 and getting one marked row
-        for i in range(len(index_list)):
-            if index_list.__getitem__(i) == 1:
-                cluster = cluster + i
-                counter = counter + 1
-            elif index_list.__getitem__(i - 1) == 1 and index_list.__getitem__(i) == 0:
-                cut_list.append(int(cluster/counter))
-                cluster = 0
-                counter = 0
-        print(cut_list)
+        final_cut_list = self.get_cut_tuple_list(cut_list)
 
+        self.cut_images(final_cut_list)
+
+    """
+        @:param final_cut_list contain the tuple having two values which mention the start and end indices of 
+                 of an image (which is supposed to separate)
+    """
+    def cut_images(self, final_cut_list):
+        # cutting
+        # we have cut list where we have give a tuple of mark (start_image_mark, and end_image_mark)
+        # now we will get all the rows of pixels in between teh start_image_mark index and end_image_mark index
+        # and put in the 2d numpy array of the same dimension length = end_image_mark index - start_image_mark index
+        # and width will be as of original image
+        # getting image
+        img = self.get_image_np_array()
+        # getting dimension
+        l, w = img.shape
+        image_counter = 0
+        # getting tuple list
+        for index_tuple in final_cut_list:
+            # image counter for naming purpose only (no logic)
+            image_counter = image_counter + 1
+            temp_img_array = self.__separate_image__(img, index_tuple, w)
+
+            # writing this image
+            self.write_image(self.path.replace('/', '').replace('.png', '')
+                             + str(image_counter) + ".png", temp_img_array)
+
+    """
+        @:param image_counter is the simply counter (int) 
+        @:param img is the 2d array of original img
+        @:param index_tuple is the tuple of shape (int, int) which tells starting and ending index of image (which
+                is supposed to separate)
+        @:param w is the width of the image (original image)
+        @:return tmp_image_array a 2d numpy array which contain the separated image
+    """
+    @staticmethod
+    def __separate_image__(img, index_tuple, w):
+        # getting height of the image, the length of external array of 2d array
+        t_length = index_tuple[1] - index_tuple[0]
+        # getting 2d array
+        temp_img_array = np.arange(t_length * w).reshape(t_length, w)
+        # we are iterating till the length of 2d array (external length) height of image
+        for i in range(t_length):
+            i = i + index_tuple[0]
+            # getting row from the real image 2d array
+            real_img_part = img[i]
+
+            # getting row from the newly created 2d array
+            new_img_part = temp_img_array[i - index_tuple[0]]
+
+            # inserting all values from the real image array to newly created image row
+            for index in range(w):
+                new_img_part[index] = real_img_part[index]
+        # print(temp_img_array)
+        return temp_img_array
+
+    """
+        @:param list cut_list has values which represent the indices of rows which are supposed to cut to 
+                 separate the image
+        @:return a list of tuple, each tuple contain the two values which are actually the starting and ending indices
+                 of and image. (which is supposed to separate from the parent image)
+    """
+    @staticmethod
+    def get_cut_tuple_list(cut_list):
         # now we have a cut_list where we have only row indices which contain most white pixels
         # now we want to convert this list to
         # [(image_start, image_end), (image_start, image_end), (image_start, image_end), (image_start, image_end), ...]
@@ -97,51 +126,53 @@ class ImgProcessing:
             if i != 0:
                 temp_tuple = (cut_list.__getitem__(i - 1), cut_list.__getitem__(i))
                 final_cut_list.append(temp_tuple)
+        return final_cut_list
 
-        print(final_cut_list)
+    """
+        @:param list index list have 0 or 1 values depends on the whites rows. the indices having 1 values representing 
+                white rows 
+        @:return a list of indices which represents the white rows indeces (the rows which are supposed to be cut)
+                  
+    """
+    @staticmethod
+    def get_white_rows_indeces(index_list):
+        cut_list = []
+        cluster = 0
+        counter = 0
+        # we have a list of rows [the rows in which white pixels are most, these are marks as 1 and others
+        # are marked as 0]
+        # we are now averaging the indices of 1 and getting one marked row
+        for i in range(len(index_list)):
+            if index_list.__getitem__(i) == 1:
+                cluster = cluster + i
+                counter = counter + 1
+            elif index_list.__getitem__(i - 1) == 1 and index_list.__getitem__(i) == 0:
+                cut_list.append(int(cluster / counter))
+                cluster = 0
+                counter = 0
+        return cut_list
 
-        # cutting
-        # we have cut list where we have give a tuple of mark (start_image_mark, and end_image_mark)
-        # now we will get all the rows of pixels in between teh start_image_mark index and end_image_mark index
-        # and put in the 2d numpy array of the same dimension length = end_image_mark index - start_image_mark index
-        # and width will be as of original image
-
-        # getting image
-        img = self.get_image_np_array()
-        # getting dimension
-        l, w = img.shape
-        temp = img[i]
-        image_counter = 0;
-        # getting tuple list
-        for index_tuple in final_cut_list:
-            # image counter for naming purpose only (no logic)
-            image_counter = image_counter + 1;
-            # getting height of the image, the length of external array of 2d array
-            t_length = index_tuple[1] - index_tuple[0]
-            # getting 2d array
-            temp_img_array = np.arange(t_length * w).reshape(t_length, w)
-            # we are iterating till the length of 2d array (external length) height of image
-            for i in range(t_length):
-                i = i + index_tuple[0]
-                # getting row from the real image 2d array
-                real_img_part = img[i]
-
-                # getting row from the newly created 2d array
-                new_img_part = temp_img_array[i - index_tuple[0]]
-
-                # inserting all values from the real image array to newly created image row
-                for index in range(w):
-                    new_img_part[index] = real_img_part[index]
-            # print(temp_img_array)
-
-            # writing this image
-            self.write_image(self.path.replace('/', '').replace('.png', '')
-                             + str(image_counter) + ".png", temp_img_array)
-
+    """
+    @:param list 
+    @:param int max_value
+    @:param int min_value
+    @:return this method return a list of same size as it get from its argument
+             the indices of returned list will marked as 1 if the value in the same index of 
+             list (got from the argument) has value in between the max_value and min_value 
+             otherwise 0   
+    """
+    @staticmethod
+    def get_marked_indices_list(list_of_sum_of_internal_array, max_value, min_value):
+        index_list = []
+        for value in list_of_sum_of_internal_array:
+            if max_value > value > min_value:
+                index_list.append(1)
+            else:
+                index_list.append(0)
+        return index_list
 
     @staticmethod
     def get_list_of_sum_of_internal_array(img):
-        l, w = img.shape;
         list_of_sum_of_internal_array = []
         for internal_array in img:
             sum_of_internal_list = 0
@@ -229,7 +260,7 @@ class ImgProcessing:
     def write_image(name, array):
         cv2.imwrite(name, array)
         print(name + " binary image has been created")
-        print("\n\n\n")
+        print("\n")
 
     """
         this method make a histogram of the gray scale img
@@ -245,7 +276,6 @@ class ImgProcessing:
         plt.hist(one_d_array, num_bins, facecolor='blue', alpha=0.5)
         plt.show()
         print('Histogram of ', self.path, 'created')
-
 
     """
         @:param img the 2d numpy array of the image
