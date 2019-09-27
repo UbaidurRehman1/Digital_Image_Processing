@@ -258,6 +258,7 @@ class ImgProcessing:
     """
     @staticmethod
     def write_image(name, array):
+        # cv2.imwrite(name, array)
         cv2.imwrite(name, array)
         print(name + " binary image has been created")
         print("\n")
