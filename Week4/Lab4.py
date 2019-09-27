@@ -118,8 +118,9 @@ def get_value_from_label_array(l, label_array):
 
 
 def pass1():
-    # im_array = get_image_np_array('Lab4-image.png')
-    im_array = test()
+    im_array = get_image_np_array('Lab4-image.png')
+    write_image("inter.png", im_array)
+    # im_array = test()
     label_array = np.zeros((im_array.shape[0], im_array.shape[1]), dtype=int)
     loc = Location()
     label_dict = {}
@@ -187,9 +188,29 @@ def pass2():
     return label_array
 
 
+def write_image(name, array):
+    cv2.imwrite(name, array)
+    print(name + " binary image has been created")
+    print("\n")
+
+
+def change_zero_255(arr):
+    row_index = 0
+    for row in arr:
+        col = 0
+        for value in row:
+            if value == 0:
+                arr[row_index][col] = 255
+            col = col + 1
+        row_index = row_index + 1
+    return arr
+
+
 def main():
     label_array = pass2()
+    label_array = change_zero_255(label_array)
     assert label_array is not None
+    write_image("testing.png", label_array)
 
 
 main()
