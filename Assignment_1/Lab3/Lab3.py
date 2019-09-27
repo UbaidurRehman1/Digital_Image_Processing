@@ -4,6 +4,7 @@ import os.path as os_path
 import matplotlib.pyplot as plt
 
 
+# noinspection DuplicatedCode,SpellCheckingInspection,PyUnresolvedReferences
 class ImgProcessing:
     def __int__(self, path, flag='binary_histogram'):
         self.path = path
@@ -26,7 +27,7 @@ class ImgProcessing:
 
     # noinspection PyArgumentList
     def recursive_cut(self, img):
-        # getting list of sum of internal lists of image 2d array
+        # list of sum of internal lists of image 2d array
         # [sum of internal array, sum of internal array, ....]
         list_of_sum_of_internal_array = ImgProcessing.get_list_of_sum_of_internal_array(img)
 
