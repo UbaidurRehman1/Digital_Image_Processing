@@ -2,7 +2,6 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 
-
 def histogram_equalization(img):
     # create an array of 256 single dimension
     intensity_array = np.zeros(shape=(256,), dtype=np.int)
@@ -21,7 +20,7 @@ def histogram_equalization(img):
     # print(probability_intensity_array)
     # calculating commutative distribution function
     cumulative_distribution_function = np.zeros(shape=(256,), dtype=np.float)
-    t_cumulative_distribution_function = np.zeros(shape=(256,), dtype=np.float)
+    t_cumulative_distribution_function = np.zeros(shape=(256,), dtype=np.uint8)
 
     value = 0
     for i in range(0, len(probability_intensity_array)):
@@ -42,7 +41,7 @@ def histogram_equalization(img):
 
 # Task 1
 # reading image
-path = 'D:/Documents/DigitalImageProcessing/Week8/hist2.png'
+path = 'D:/Documents/DigitalImageProcessing/Week8/image.png'
 read_img = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
 cv2.imshow('Image', read_img)
 cv2.waitKey(0)
