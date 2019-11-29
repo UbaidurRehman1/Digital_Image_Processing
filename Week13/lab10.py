@@ -1,33 +1,37 @@
 import cv2
 import numpy as np
 
-# # reading image
-# pic = cv2.imread('pic1.png')
-#
-# cv2.imshow('Original Image', pic)
-#
-# # kernel of size 5 by 5
-# kernel = np.ones((5, 5), np.uint8)
-#
-# eroded_pic = cv2.erode(pic, kernel, iterations=1)
-# cv2.imshow('Eroded Pic', eroded_pic)
-# cv2.waitKey(0)
-#
-# dilated_pic = cv2.dilate(pic, kernel, iterations=1)
-# cv2.imshow('Dilated Pic', dilated_pic)
-# cv2.waitKey(0)
-#
-# opening_img = cv2.morphologyEx(pic, cv2.MORPH_OPEN, kernel)
-# cv2.imshow('Opening', opening_img)
-# cv2.waitKey(0)
-#
-# closing_img = cv2.morphologyEx(pic, cv2.MORPH_CLOSE, kernel)
-# cv2.imshow('Closing', closing_img)
-# cv2.waitKey(0)
 
 # Task 2
 def main():
+    # reading image
+    pic = cv2.imread('pic1.png')
+
+    cv2.imshow('Original Image', pic)
+
+    # kernel of size 5 by 5
+    kernel = np.ones((5, 5), np.uint8)
+
+    eroded_pic = cv2.erode(pic, kernel, iterations=1)
+    cv2.imshow('Eroded Pic', eroded_pic)
+    cv2.waitKey(0)
+
+    dilated_pic = cv2.dilate(pic, kernel, iterations=1)
+    cv2.imshow('Dilated Pic', dilated_pic)
+    cv2.waitKey(0)
+
+    opening_img = cv2.morphologyEx(pic, cv2.MORPH_OPEN, kernel)
+    cv2.imshow('Opening', opening_img)
+    cv2.waitKey(0)
+
+    closing_img = cv2.morphologyEx(pic, cv2.MORPH_CLOSE, kernel)
+    cv2.imshow('Closing', closing_img)
+    cv2.waitKey(0)
+
     pic_2 = cv2.imread('pic2.png')
+
+    cv2.imshow('Original Image', pic_2)
+    cv2.waitKey(0)
 
     row_for_detection = pic_2[13]
     column_for_detection = pic_2[1][1]
